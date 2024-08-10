@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulate Dragover Event</title>
+    <style>
+        #dragTarget {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            background-color: lightblue;
+            margin: 50px auto;
+            cursor: move;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="dragTarget"></div>
+
+    <script>
+    var dragTarget = document.getElementById('dragTarget');
+    var isDragging, startTop, startY;
+
+    // Function to handle the mousedown event
+    dragTarget.addEventListener('mousedown', function(event) {
+        isDragging = true;
+
+        // Store the initial top position
+        startTop = dragTarget.offsetTop;
+
+        // Store the initial mouse coordinates
+        startY = event.clientY;
+
+        // Attach event listeners for mousemove and mouseup
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    });
+
+    // Function to handle the mousemove event during dragging
+    function handleMouseMove(event) {
+        // If not currently dragging, exit early to skip the dragging logic
+        if (!isDragging) return;
+
+        // Calculate the distance moved
+        var deltaY = event.clientY - startY;
+
+        // Update the element's position using the top property
+        dragTarget.style.top = startTop + deltaY + 'px';
+        
+        // Trigger the dragover event manually
+        simulateDragover();
+    }
+    
+    // Function to simulate the dragover event
+    function simulateDragover() {
+        // Create a new Event object for the 'dragover' event
+        var dragoverEvent = document.createEvent('Event');
+
+        // Initialize the event with type 'dragover', bubbling, and cancelable
+        dragoverEvent.initEvent('dragover', true, true);
+
+        // Dispatch the dragover event to the target element
+        dragTarget.dispatchEvent(dragoverEvent);
+    }
+
+    // Function to handle the mouseup event
+    function handleMouseUp() {
+        isDragging = false;
+
+        // Remove the temporary event listeners
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+    }
+    </script>
+
+</body>
+
+</html>

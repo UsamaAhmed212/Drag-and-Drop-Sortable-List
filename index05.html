@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        [draggable="true"] {
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+
+        ul.moveable {
+            list-style: none;
+            margin: 0px;
+        }
+
+        ul.moveable li {
+            list-style-image: none;
+            margin: 10px;
+            border: 1px solid #ccc;
+            padding: 4px;
+            border-radius: 4px;
+            color: #666;
+            cursor: move;
+        }
+
+        ul.moveable li:hover {
+            background-color: #eee;
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="items-list" class="moveable">
+        <li>One</li>
+        <li>Two</li>
+        <li>Three</li>
+        <li>Four</li>
+    </ul>
+
+    <script>
+        var items = document.querySelectorAll('#items-list > li');
+
+        items.forEach(function (item) {
+            item.draggable = true;
+            item.addEventListener('dragstart', dragStart);
+            item.addEventListener('drop', dropped);
+            item.addEventListener('dragenter', cancelDefault);
+            item.addEventListener('dragover', cancelDefault);
+        });
+
+        function dragStart(e) {
+            var index = Array.from(e.target.parentNode.children).indexOf(e.target);
+            e.dataTransfer.setData('text/plain', index);
+        }
+
+        function dropped(e) {
+            cancelDefault(e);
+
+            // get new and old index
+            var oldIndex = e.dataTransfer.getData('text/plain');
+            var target = e.target;
+            var newIndex = Array.from(target.parentNode.children).indexOf(target);
+
+            // remove dropped items at old place
+            var dropped = target.parentNode.removeChild(target.parentNode.children[oldIndex]);
+
+            // insert the dropped items at new place
+            if (newIndex < oldIndex) {
+                target.parentNode.insertBefore(dropped, target);
+            } else {
+                target.parentNode.insertBefore(dropped, target.nextSibling);
+            }
+        }
+
+        function cancelDefault(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        ul {
+            /* margin: 50px 50px 0; */
+        }
+
+        li {
+            background-color: steelblue;
+            color: white;
+            font-weight: 100;
+            letter-spacing: 0.1em;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            border-radius: 2px;
+            user-select: none;
+            cursor: move;
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="items-list" class="sortable-list">
+        <li class="item">One</li>
+        <li class="item">Two</li>
+        <li class="item">Three</li>
+        <li class="item">Four</li>
+    </ul>
+
+    <script>
+        "use strict";
+        document.addEventListener('DOMContentLoaded', function () {
+
+            setTimeout(() => {
+                console.clear();
+            }, 1000);
+
+            var sortableList = document.querySelector(".sortable-list");
+            var items = sortableList.querySelectorAll(".item");
+            var isDragging, currentItem, startY, initialIndex, closestItem;
+
+            items.forEach(function (item, index) {
+
+                // Function to handle the mousedown event
+                item.addEventListener('mousedown', function (event) {
+                    isDragging = true;
+                    currentItem = item;
+                    initialIndex = index;
+
+                    item.style.backgroundColor = '#626e78';
+                    
+                    // Store the initial mouse coordinates
+                    startY = event.clientY;
+
+                    // Attach event listeners for mousemove and mouseup
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp, { once: true });
+                });
+
+            });
+
+            // Function to handle the mousemove event during dragging
+            function handleMouseMove(event) {
+                // If not currently dragging, exit early to skip the dragging logic
+                if (!isDragging) return;
+
+                // Calculate the distance moved
+                var deltaY = event.clientY - startY;
+
+                currentItem.style.transform = 'translateY(' + deltaY + 'px)';
+
+                // Update the closest item during mousemove
+                closestItem = findClosestItem(currentItem);
+
+                // Calculate the percentage crossed during mousemove
+                var percentageCrossed = calculateOverlapPercentage(currentItem, closestItem);
+
+                // Log the closest item during mousemove when crossed by 80% or more
+                console.log("Percentage Crossed during Mouse Move:", percentageCrossed.toFixed(2) + "%");
+                if (percentageCrossed > 80) {
+                    console.log("Closest Item on Mouse Move:", closestItem.textContent);
+                    
+                    currentItem.style.backgroundColor = '#af7a4c';
+                }
+            }
+
+            // Function to handle the mouseup event
+            function handleMouseUp(event) {
+                isDragging = false;
+
+                // Remove the 'style' attribute
+                currentItem.removeAttribute('style');
+
+                // Remove the temporary event listeners
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+
+                // Determine the closest item at the moment of mouseup
+                closestItem = findClosestItem(currentItem);
+
+                // Calculate the percentage crossed on mouseup
+                var percentageCrossed = calculateOverlapPercentage(currentItem, closestItem);
+
+                // Move the current item to the new position
+                var newIndex = initialIndex + Math.round((event.clientY - startY) / currentItem.offsetHeight);
+                newIndex = Math.max(0, Math.min(items.length - 1, newIndex));
+
+                if (newIndex !== initialIndex) {
+                    sortableList.insertBefore(currentItem, items[newIndex]);
+
+                    // Log something when an item crosses another item
+                    console.log("Item crossed:", percentageCrossed.toFixed(2) + "%");
+                    console.log("Closest Item on Cross (Mouse Up):", closestItem.textContent);
+                }
+
+                // Log the closest item and percentage crossed on mouseup
+                console.log("Closest Item on Mouse Up:", closestItem.textContent);
+                console.log("Percentage Crossed on Mouse Up:", percentageCrossed.toFixed(2) + "%");
+            }
+
+            // Function to calculate the percentage of overlap between two elements
+            function calculateOverlapPercentage(element1, element2) {
+                var rect1 = element1.getBoundingClientRect();
+                var rect2 = element2.getBoundingClientRect();
+
+                var overlapHeight = Math.max(0, Math.min(rect1.bottom, rect2.bottom) - Math.max(rect1.top, rect2.top));
+                var percentage = (overlapHeight / Math.min(rect1.height, rect2.height)) * 100;
+
+                return percentage;
+            }
+
+            // Function to find the closest item to the current item
+            function findClosestItem(currentItem) {
+                var minDistance = Infinity;
+                var closest;
+
+                items.forEach(function (item) {
+                    if (item !== currentItem) {
+                        var distance = Math.abs(item.getBoundingClientRect().top - currentItem.getBoundingClientRect().top);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closest = item;
+                        }
+                    }
+                });
+
+                return closest;
+            }
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        body {
+            font-family: "Helvetica Neue";
+            background-color: lightslategray;
+            text-align: center;
+        }
+
+        p {
+            margin: 50px auto;
+            color: white;
+            font-size: 1.5em;
+            font-weight: 100;
+            letter-spacing: 0.1em;
+        }
+
+        ul {
+            max-width: 400px;
+            list-style: none;
+            margin: 50px auto;
+            text-align: left;
+            /*padding-left: 0;
+       */
+            background-color: rgba(255, 255, 255, .3);
+            padding: 15px 10px 10px 10px;
+            border-radius: 5px;
+        }
+
+        li {
+            background-color: steelblue;
+            color: white;
+            font-weight: 100;
+            letter-spacing: 0.1em;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 2px;
+            user-select: none;
+            cursor: move;
+        }
+
+        .slip-swiping-container {
+            overflow-x: hidden;
+        }
+
+        .slip-reordering {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+        }
+    </style>
+</head>
+
+<body>
+    <p>#1. the one with just slip.js</p>
+    <ul id="sortable-list">
+        <li>0</li>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+    </ul>
+
+    <!-- <script src="https://unpkg.com/slipjs"></script> -->
+    <script src="slip.js"></script>
+
+    <script>
+        setTimeout(() => {
+            console.clear();
+        }, 1000);
+
+        var ul = document.getElementById('sortable-list');
+
+        ul.addEventListener('slip:beforereorder', function (e) {
+            if (/demo-no-reorder/.test(e.target.className)) {
+                e.preventDefault();
+            }
+        }, false);
+
+        ul.addEventListener('slip:beforeswipe', function (e) {
+            if (e.target.nodeName == 'INPUT' || /no-swipe/.test(e.target.className)) {
+                e.preventDefault();
+            }
+        }, false);
+
+        ul.addEventListener('slip:beforewait', function (e) {
+            e.preventDefault();
+        }, false);
+
+        /*ul.addEventListener('slip:afterswipe', function(e){
+          e.target.parentNode.appendChild(e.target);
+        }, false);*/
+
+        ul.addEventListener('slip:reorder', function (e) {
+            e.target.parentNode.insertBefore(e.target, e.detail.insertBefore);
+            return false;
+        }, false);
+
+        new Slip(ul);
+    </script>
+</body>
+
+</html>

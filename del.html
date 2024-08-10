@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<!-- Coding By CodingNepal - youtube.com/codingnepal -->
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Drag and Drop Sortable List | CodingNepal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css" />
+    <style>
+        /* Import Google font - Poppins */
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #595db8;
+        }
+
+        .sortable-list {
+            width: 425px;
+            padding: 25px;
+            background: #fff;
+            border-radius: 7px;
+            padding: 30px 25px 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .sortable-list .item {
+            list-style: none;
+            display: flex;
+            cursor: move;
+            background: #fff;
+            align-items: center;
+            border-radius: 5px;
+            padding: 10px 13px;
+            margin-bottom: 11px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+            border: 1px solid #ccc;
+            justify-content: space-between;
+        }
+
+        .item .details {
+            display: flex;
+            align-items: center;
+        }
+
+        .item .details img {
+            height: 43px;
+            width: 43px;
+            pointer-events: none;
+            margin-right: 12px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .item .details span {
+            font-size: 1.13rem;
+        }
+
+        .item i {
+            color: #474747;
+            font-size: 1.13rem;
+        }
+
+        .sortable-placeholder {
+            margin-bottom: 10px;
+            border: 1px dashed #f1c40f;
+            background-color: #fffae4;
+            height: 65px;
+        }
+    </style>
+</head>
+
+<body>
+    <ul class="sortable-list" id="sortableList">
+        <li class="item">
+            <div class="details">
+                <img src="images/img-1.jpg" />
+                <span>Kristina Zasiadko</span>
+            </div>
+            <i class="uil uil-draggabledots"></i>
+        </li>
+        <li class="item">
+            <div class="details">
+                <img src="images/img-2.jpg" />
+                <span>Gabriel Wilson</span>
+            </div>
+            <i class="uil uil-draggabledots"></i>
+        </li>
+        <li class="item">
+            <div class="details">
+                <img src="images/img-3.jpg" />
+                <span>Ronelle Cesicon</span>
+            </div>
+            <i class="uil uil-draggabledots"></i>
+        </li>
+    </ul>
+
+    <script>
+        "use strict";
+        document.addEventListener('DOMContentLoaded', function () {
+
+            setTimeout(() => {
+                console.clear();
+            }, 1000);
+
+            var sortableList = document.getElementById("sortableList");
+            var isDragging, draggingItem, startTop, startY, placeholderElement;
+
+            sortableList.addEventListener("mousedown", function (event) {
+                if (event.target.classList.contains("item")) {
+                    isDragging = true;
+                    draggingItem = event.target;
+                    startTop = draggingItem.offsetTop;
+                    startY = event.clientY;
+
+                    placeholderElement = document.createElement("div");
+                    placeholderElement.classList.add("sortable-placeholder");
+                    draggingItem.after(placeholderElement);
+
+                    var width = draggingItem.offsetWidth;
+                    var height = draggingItem.offsetHeight;
+                    draggingItem.style.position = "absolute";
+                    draggingItem.style.width = width + "px";
+                    draggingItem.style.height = height + "px";
+                    draggingItem.style.userSelect = "none";
+                    draggingItem.style.willChange = "transform";
+                    draggingItem.style.zIndex = "1000";
+
+                    document.addEventListener(
+                        "mousemove",
+                        handleMouseMove.bind(null, draggingItem)
+                    );
+                    document.addEventListener(
+                        "mouseup",
+                        handleMouseUp.bind(null, draggingItem),
+                        { once: true }
+                    );
+                }
+            });
+
+            function handleMouseMove(item, event) {
+                if (!isDragging) return;
+
+                var deltaY = event.clientY - startY;
+                item.style.top = startTop + deltaY + "px";
+
+                // Check if the dragged item is crossing over another item
+                var middleY = item.offsetTop + item.offsetHeight / 2;
+
+                var closestItem = getClosestItem(middleY, item);
+
+                if (closestItem) {
+                    placeholderElement.style.marginTop = closestItem.offsetHeight + "px";
+                    closestItem.parentNode.insertBefore(placeholderElement, closestItem.nextSibling);
+                } else {
+                    placeholderElement.style.marginTop = "0";
+                }
+
+                simulateDragover(item);
+            }
+
+            function simulateDragover(item) {
+                var dragoverEvent = document.createEvent("Event");
+                dragoverEvent.initEvent("dragover", true, true);
+                item.dispatchEvent(dragoverEvent);
+            }
+
+            function handleMouseUp(item, event) {
+                isDragging = false;
+                item.removeAttribute("style");
+
+                if (placeholderElement) {
+                    var parent = placeholderElement.parentNode;
+                    var draggedMiddleY = item.getBoundingClientRect().top + item.offsetHeight / 2;
+                    var closestItem = getClosestItem(draggedMiddleY, item);
+
+                    // Check if the dragged item is more than 50% over the closest item
+                    if (closestItem && Math.abs(draggedMiddleY - closestItem.offsetTop) > closestItem.offsetHeight / 2) {
+                        parent.insertBefore(item, placeholderElement.nextSibling);
+                    } else {
+                        parent.insertBefore(item, placeholderElement);
+                    }
+
+                    placeholderElement.remove();
+                }
+
+                document.removeEventListener("mousemove", handleMouseMove);
+                document.removeEventListener("mouseup", handleMouseUp);
+            }
+
+            function getClosestItem(middleY, draggedItem) {
+                var items = Array.from(draggedItem.parentNode.children).filter(
+                    (child) => child !== draggedItem && child.classList.contains("item")
+                );
+
+                return items.reduce((closest, child) => {
+                    var childRect = child.getBoundingClientRect();
+                    var childMiddleY = childRect.top + childRect.height / 2;
+
+                    if (
+                        Math.abs(middleY - childMiddleY) < Math.abs(middleY - closest.middleY)
+                    ) {
+                        return { middleY: childMiddleY, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { middleY: Infinity, element: null }).element;
+            }
+        });
+    </script>
+</body>
+
+</html>

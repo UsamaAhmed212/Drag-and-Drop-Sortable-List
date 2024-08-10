@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .moveable li {
+            cursor: move;
+            user-select: none;
+        }
+
+        .selected {
+            background-color: lightgray;
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="items-list" class="moveable">
+        <li>One</li>
+        <li>Two</li>
+        <li>Three</li>
+        <li>Four</li>
+    </ul>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var itemsList = document.getElementById("items-list");
+            var selectedElement = null;
+
+            itemsList.addEventListener("mousedown", function (event) {
+                if (event.target.tagName === 'LI') {
+                    event.preventDefault();
+                    selectedElement = event.target;
+                    selectedElement.classList.add("selected");
+
+                    var offsetX = event.clientX - selectedElement.getBoundingClientRect().left;
+                    var offsetY = event.clientY - selectedElement.getBoundingClientRect().top;
+
+                    function handleMouseMove(moveEvent) {
+                        selectedElement.style.position = 'absolute';
+                        selectedElement.style.left = moveEvent.clientX - offsetX + 'px';
+                        selectedElement.style.top = moveEvent.clientY - offsetY + 'px';
+                    }
+
+                    function handleMouseUp(upEvent) {
+                        selectedElement.classList.remove("selected");
+                        selectedElement.style.position = '';
+                        selectedElement.style.left = '';
+                        selectedElement.style.top = '';
+
+                        document.removeEventListener("mousemove", handleMouseMove);
+                        document.removeEventListener("mouseup", handleMouseUp);
+
+                        var target = document.elementFromPoint(upEvent.clientX, upEvent.clientY);
+                        console.log(upEvent.clientX, upEvent.clientY,target);
+                        if (target && target.tagName === 'LI') {
+                            itemsList.insertBefore(selectedElement, target);
+                        }
+                    }
+
+                    document.addEventListener("mousemove", handleMouseMove);
+                    document.addEventListener("mouseup", handleMouseUp);
+                }
+            });
+
+            itemsList.addEventListener("dragover", function (event) {
+                event.preventDefault();
+            });
+        });
+    </script>
+</body>
+
+</html>

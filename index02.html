@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        body {
+            font: 16px Arial, Helvetica, sans-serif;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        li {
+            cursor: pointer;
+            user-select: none;
+            color: #1C94C4;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            background-color: #f6f6f6;
+            padding: 10px;
+            width: 150px;
+            margin-bottom: 3px;
+        }
+
+        .hidden {
+            color: transparent;
+            border: 1px dashed rgba(0, 0, 0, 0.2);
+            background-color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <ul ondragover="allowDrop(event)">
+        <li draggable="true" ondragend="dragEnd()" ondragover="dragOver(event)" ondragstart="dragStart(event)">Apples</li>
+        <li draggable="true" ondragend="dragEnd()" ondragover="dragOver(event)" ondragstart="dragStart(event)">Oranges</li>
+        <li draggable="true" ondragend="dragEnd()" ondragover="dragOver(event)" ondragstart="dragStart(event)">Bananas</li>
+        <li draggable="true" ondragend="dragEnd()" ondragover="dragOver(event)" ondragstart="dragStart(event)">Strawberries</li>
+    </ul>
+
+    <script>
+        setTimeout(() => {
+            console.clear();
+        }, 1000);
+
+        var element;
+
+        function allowDrop(e) {
+            e.preventDefault();
+        }
+
+        function dragStart(e) {
+            // e.dataTransfer.effectAllowed = "move";
+            // e.dataTransfer.setData("text/plain", null);
+
+            element = e.target;
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+
+            element.classList.add('hidden');
+            
+            if (isBefore(element, e.target)) {
+                // If element is before e.target, insert element before e.target
+                e.target.parentNode.insertBefore(element, e.target);
+            } else {
+                // If element is after e.target, insert element after e.target
+                e.target.parentNode.insertBefore(element, e.target.nextSibling);
+            }
+        }
+
+        function dragEnd() {
+            element.classList.remove('hidden');
+
+            element = null;
+        }
+
+        function isBefore(element1, element2) {
+            if (element1.parentNode === element2.parentNode) {
+                for (var cur = element1.previousSibling; cur; cur = cur.previousSibling) {
+                    if (cur === element2) return true;
+                }
+            }
+            return false;
+        }
+    
+    </script>
+</body>
+
+</html>

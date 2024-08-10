@@ -6,13 +6,15 @@
     box-sizing: border-box;
     font-family: "Poppins", sans-serif;
 }
+
 body {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: #595db8;
+    background: #626e78;
 }
+
 .sortable-list {
     width: 425px;
     padding: 25px;
@@ -21,6 +23,7 @@ body {
     padding: 30px 25px 20px;
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
+
 .sortable-list .item {
     list-style: none;
     display: flex;
@@ -30,32 +33,38 @@ body {
     border-radius: 5px;
     padding: 10px 13px;
     margin-bottom: 11px;
-    /* box-shadow: 0 2px 4px rgba(0,0,0,0.06); */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
     border: 1px solid #ccc;
     justify-content: space-between;
 }
+
 .item .details {
     display: flex;
     align-items: center;
 }
+
 .item .details img {
-    height: 43px;
-    width: 43px;
+    width: 45px;
+    height: 45px;
     pointer-events: none;
     margin-right: 12px;
-    object-fit: cover;
+    object-fit: scale-down;
     border-radius: 50%;
 }
+
 .item .details span {
     font-size: 1.13rem;
 }
+
 .item i {
     color: #474747;
     font-size: 1.13rem;
 }
-.item.dragging {
-    opacity: 0.6;
-}
-.item.dragging :where(.details, i) {
-    opacity: 0;
+
+.sortable-placeholder {
+    height: 65px;
+    margin-bottom: 10px;
+    border: 1px dashed #f1c40f;
+    background-color: #fffae4;
+    border-radius: 5px;
 }

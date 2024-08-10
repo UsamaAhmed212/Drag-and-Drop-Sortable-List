@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index 10</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        ul {
+            /* margin: 50px 50px 0; */
+        }
+
+        li {
+            background-color: steelblue;
+            color: white;
+            font-weight: 100;
+            letter-spacing: 0.1em;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            border-radius: 2px;
+            user-select: none;
+            cursor: move;
+        }
+
+        .crossed {
+            background-color: #af7a4c !important;
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="items-list" class="sortable-list">
+        <li>One</li>
+        <li>Two</li>
+        <li>Three</li>
+        <li>Four</li>
+        <li>Five</li>
+        <li>Six</li>
+    </ul>
+
+    <script>
+        "use strict";
+        document.addEventListener('DOMContentLoaded', function () {
+
+            setTimeout(() => {
+                console.clear();
+            }, 500);
+
+            var sortableList = document.querySelector(".sortable-list");
+            var items = sortableList.querySelectorAll("li");
+
+            var isDragging, draggingDirection, startY, currentY, previousY, draggedItem, draggedItemIndex, crossedItem, crossedItemIndex;
+
+            items.forEach(function (item, index) {
+
+                // Function to handle the mousedown event
+                item.addEventListener('mousedown', function (event) {
+                    isDragging = true;
+                    draggingDirection = null;
+                    startY = event.clientY; // Store the initial mouse Y-coordinate coordinates
+                    currentY = null;
+                    previousY = null;
+                    draggedItem = item;
+                    draggedItemIndex = index;
+                    crossedItem = null;
+                    crossedItemIndex = null;
+
+                    // item.style.backgroundColor = '#626e78';
+                    item.style.backgroundColor = 'rgb(98 110 120 / 49%)';
+                    // item.insertAdjacentHTML('afterend', '<div class="sortable-placeholder"></div>');
+
+                    items.forEach(function (item) {
+                        if (item !== draggedItem) {
+                            item.style.transition = 'transform 0.2s ease-in-out 0s';
+                        }
+                    });
+
+                    console.log(item.offsetTop, item.offsetHeight, item.offsetTop+item.offsetHeight);
+                    
+                    // Attach event listeners for mousemove and mouseup
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp, { once: true });
+                });
+
+            });
+
+            // Function to handle the mousemove event during dragging
+            function handleMouseMove(event) {
+                // If not currently dragging, exit early to skip the dragging logic
+                if (!isDragging) return;
+
+                // Calculate the distance moved
+                var deltaY = event.clientY - startY;
+
+                draggedItem.style.transform = 'translateY(' + deltaY + 'px)';
+                
+                currentY = event.clientY - startY;
+                
+                if ( currentY < previousY && draggingDirection === 'down' ) {
+                    console.log('I am Reversing Top');
+                    
+                    if (startY >= event.clientY) {
+                        draggingDirection = 'up';
+                        crossedItem = null;
+                    }
+
+                    var previousItem = crossedItem;
+
+                    // Use a loop to find the previous li element
+                    while (previousItem && previousItem.tagName !== 'LI') {
+                        previousItem = previousItem.previousElementSibling;
+                    }
+
+                    if (previousItem) {
+                        if ( currentY <= previousItem.offsetTop - draggedItem.offsetTop ) {
+                            crossedItemIndex = Array.from(items).indexOf(previousItem);
+                            crossedItem = previousItem.previousElementSibling;
+
+                            if (draggedItemIndex !== crossedItemIndex) {
+                                previousItem.style.backgroundColor = '#b44646';
+                                previousItem.style.transform = '';
+                            }
+                        }
+                    }
+
+                } 
+                else if ( currentY > previousY && draggingDirection === 'up' ) {
+                    console.log('I am Reversing Bottom');
+                    
+                    if (startY <= event.clientY) {
+                        draggingDirection = 'down';
+                        crossedItem = null;
+                    }
+
+                    var nextItem = crossedItem;
+
+                    // Use a loop to find the next li element
+                    while (nextItem && nextItem.tagName !== 'LI') {
+                        nextItem = nextItem.nextElementSibling;
+                    }
+
+                    if (nextItem) {
+                        if ( currentY >= nextItem.offsetTop - draggedItem.offsetTop ) {
+                            crossedItemIndex = Array.from(items).indexOf(nextItem);
+                            crossedItem = nextItem.nextElementSibling;
+
+                            if (draggedItemIndex !== crossedItemIndex) {
+                                nextItem.style.backgroundColor = '#b44646';
+                                nextItem.style.transform = '';
+                            }
+                        }
+                    }
+
+                } 
+                else if ( currentY > previousY ) {
+                    
+                    draggingDirection = 'down';
+                    console.log('Mouse moving towards the bottom');
+
+                    var nextItem = crossedItem ? crossedItem.nextElementSibling : draggedItem.nextElementSibling;
+
+                    // Use a loop to find the next li element
+                    while (nextItem && nextItem.tagName !== 'LI') {
+                        nextItem = nextItem.nextElementSibling;
+                    }
+
+                    if (nextItem) {
+                        if ( currentY >= nextItem.offsetTop - draggedItem.offsetTop ) {
+                            crossedItemIndex = Array.from(items).indexOf(nextItem);
+                            crossedItem = nextItem;
+
+                            if (draggedItemIndex !== crossedItemIndex) {
+                                nextItem.style.backgroundColor = '#af7a4c';
+                                
+                                // Get the computed styles
+                                var styles = getComputedStyle(draggedItem);
+
+                                // Extract the height including top margin
+                                var heightWithTopMargin = parseFloat(styles.height) +
+                                                    parseFloat(styles.marginTop);
+
+                                nextItem.style.transform = 'translateY(' + -(heightWithTopMargin) + 'px)';
+                            }
+                        }
+                    }
+
+                } 
+                else if ( currentY < previousY ) {
+                    
+                    draggingDirection = 'up';
+                    console.log('Mouse moving towards the top');
+
+                    var previousItem = crossedItem ? crossedItem.previousElementSibling : draggedItem.previousElementSibling;
+                    
+                    // Use a loop to find the previous li element
+                    while (previousItem && previousItem.tagName !== 'LI') {
+                        previousItem = previousItem.previousElementSibling;
+                    }
+
+                    if (previousItem) {
+                        if ( currentY <= previousItem.offsetTop - draggedItem.offsetTop ) {
+                            crossedItemIndex = Array.from(items).indexOf(previousItem);
+                            crossedItem = previousItem;
+
+                            if (draggedItemIndex !== crossedItemIndex) {
+                                previousItem.style.backgroundColor = '#af7a4c';
+                                
+                                // Get the computed styles
+                                var styles = getComputedStyle(draggedItem);
+
+                                // Extract the height including bottom margin
+                                var heightWithMarginBottom = parseFloat(styles.height) +
+                                                    parseFloat(styles.marginBottom);
+
+                                previousItem.style.transform = 'translateY(' + (heightWithMarginBottom) + 'px)';
+                            }
+                        }
+                    }
+
+                }
+
+                // Update the previous coordinates for the next iteration
+                previousY = currentY;
+
+            }
+
+            // Function to handle the mouseup event
+            function handleMouseUp(event) {
+                console.log('Mouse Up');
+                
+                isDragging = false;
+
+                // Remove the 'style' attribute from all items
+                items.forEach(function (item) {
+                    item.removeAttribute('style');
+                });
+
+                // Remove the temporary event listeners
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            }
+
+        });
+
+    </script>
+</body>
+
+</html>
