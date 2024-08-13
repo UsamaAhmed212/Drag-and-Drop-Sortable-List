@@ -36,6 +36,9 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.06);
     border: 1px solid #ccc;
     justify-content: space-between;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
 }
 
 .item .details {
@@ -68,3 +71,25 @@ body {
     background-color: #fffae4;
     border-radius: 5px;
 }
+.item.react {
+    /* transform: translateY(-67px); */
+}
+
+div.spike {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
+
+.log div {
+    margin-bottom: 5px;
+}
+.log span.count {
+    background-color: #44a9b3;
+    margin-right: 8px;
+}
+
+.log span.text {
+    /* margin-left: 55px; */
+}
+

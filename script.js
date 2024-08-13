@@ -53,9 +53,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 // item.style.width = width + 'px';
                 // item.style.height = height + 'px';
                 // item.style.zIndex = '1000';
-                item.style.userSelect = 'none';
-                item.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.45)';
-                item.style.willChange = 'transform';
+
+                // Uncomment this
+                // item.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.45)';
+                // item.style.willChange = 'transform';
                 
                 var createElement = document.createElement('div'); // Create a new <div> element
                 createElement.classList.add('sortable-placeholder'); // Add the 'sortable-placeholder' class to the created element
@@ -86,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Check if the mouse is moving upward and the dragging direction is 'down'
             if ( currentY < previousY && draggingDirection === 'down' ) {
+                logConsole("reversing-top")
                 console.log('I am Reversing Top');
                 
                 // Check if the mouse is moving upward from its starting position
@@ -113,9 +115,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
 
-            } 
+            }
             // Check if the mouse is moving downward and the dragging direction is 'up'
             else if ( currentY > previousY && draggingDirection === 'up' ) {
+                logConsole("reversing-bottom")
                 console.log('I am Reversing Bottom');
                 
                 // Check if the mouse is moving downward from its starting position
@@ -146,9 +149,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             // Handle dragging downward 
             else if ( currentY > previousY ) {
+                logConsole("moving-bottom")
+                console.log('Mouse moving towards the bottom');
                 
                 draggingDirection = 'down';
-                console.log('Mouse moving towards the bottom');
 
                 // Determine the next item in the list
                 var nextItem = crossedItem ? crossedItem.nextElementSibling : draggedItem.nextElementSibling;
@@ -168,12 +172,11 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Get the computed styles
                             var styles = getComputedStyle(draggedItem);
 
-                            // Extract the height including top margin
-                            var heightWithTopMargin = parseFloat(styles.height) +
-                                                parseFloat(styles.marginTop);
+                            // Extract the height including margin
+                            var heightWithMargin = parseFloat(styles.height) + parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
 
                             // Translate the next item upward by the height of the dragged item
-                            nextItem.style.transform = 'translateY(' + -(heightWithTopMargin) + 'px)';
+                            nextItem.style.transform = 'translateY(' + -(heightWithMargin) + 'px)';
                         }
                     }
                 }
@@ -181,9 +184,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             // Handle dragging upward 
             else if ( currentY < previousY ) {
+                logConsole("moving-top")
+                console.log('Mouse moving towards the top');
                 
                 draggingDirection = 'up';
-                console.log('Mouse moving towards the top');
 
                 // Determine the previous item in the list
                 var previousItem = crossedItem ? crossedItem.previousElementSibling : draggedItem.previousElementSibling;
@@ -203,12 +207,11 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Get the computed styles
                             var styles = getComputedStyle(draggedItem);
 
-                            // Extract the height including bottom margin
-                            var heightWithMarginBottom = parseFloat(styles.height) +
-                                                parseFloat(styles.marginBottom);
+                            // Extract the height including margin
+                            var heightWithMargin = parseFloat(styles.height) + parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
 
                             // Translate the previous item downward by the height of the dragged item
-                            previousItem.style.transform = 'translateY(' + (heightWithMarginBottom) + 'px)';
+                            previousItem.style.transform = 'translateY(' + (heightWithMargin) + 'px)';
                         }
                     }
                 }
@@ -217,9 +220,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Update the previous coordinates for the next iteration
             previousY = currentY;
-
         }
+        
+        // logConsole(undefined, "logText")
+        function logConsole(direction, logText) {
+            // console.clear();
+            var logElement = document.querySelector(".log");
+            var lastElement = logElement.lastElementChild;
 
+            if(lastElement && lastElement.className == direction) {
+                var lastElementCount = lastElement.querySelector(".count");
+                lastElementCount.innerHTML = parseInt(lastElementCount.innerHTML) + 1;
+            } else {
+                if(logText) logElement.innerHTML += '<div class="log-text"><span class="count">0</span><span class="text">' + logText + '</div>';
+                    
+                switch (direction) {
+                    case 'reversing-top':
+                        logElement.innerHTML += '<div class="reversing-top"><span class="count">1</span><span class="text">I am Reversing Top</span></div>';
+                        break;
+                    case 'reversing-bottom':
+                        logElement.innerHTML += '<div class="reversing-bottom"><span class="count">1</span><span class="text">I am Reversing Bottom</span></div>';
+                        break;
+                    case 'moving-bottom':
+                        logElement.innerHTML += '<div class="moving-bottom"><span class="count">1</span><span class="text">Mouse moving towards the Bottom</span></div>';
+                        break;
+                    case 'moving-top':
+                        logElement.innerHTML += '<div class="moving-top"><span class="count">1</span><span class="text">Mouse moving towards the top</span></div>';
+                        break;
+                    default:
+                        logElement.innerHTML += '<div class="unknown-direction"><span class="count">1</span><span class="text">Handle any other cases or errors</span></div>';
+                }
+            }
+            // console.log(lastElement);
+        }
 
         /**
          * Handles the mouseup event, finalizing the drag-and-drop operation.
@@ -246,4 +279,31 @@ document.addEventListener('DOMContentLoaded', function () {
         
     }
 
+
+var spikeItems = document.querySelectorAll(".spike div")
+setInterval(() => {
+    // var react = sortableList.querySelector('.item.react')
+    // var sass = sortableList.querySelector('.item.sass')
+
+    // console.log("React :=>", getComputedStyle(react).transform );
+    // console.log("Sass :=>", getComputedStyle(sass).transform );
+    var node = document.querySelector('.item.node')
+    var react = document.querySelector('.item.react')
+    var tailwind = document.querySelector('.item.tailwind')
+    var sass = document.querySelector('.item.sass')
+    var flutter = document.querySelector('.item.flutter')
+    var kotlin = document.querySelector('.item.kotlin')
+    
+    spikeItems[0].innerHTML = "Node :=> "+ node.getAttribute("style");
+    spikeItems[1].innerHTML = "React :=> "+ react.getAttribute("style");
+    spikeItems[2].innerHTML = "Tailwind :=> "+ tailwind.getAttribute("style");
+    spikeItems[3].innerHTML = "Sass :=> "+ sass.getAttribute("style");
+    spikeItems[4].innerHTML = "Flutter :=> "+ flutter.getAttribute("style");
+    spikeItems[5].innerHTML = "Kotlin :=> "+ kotlin.getAttribute("style");
+    
+
+}, 10);
+
 });
+
+
