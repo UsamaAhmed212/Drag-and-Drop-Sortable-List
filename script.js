@@ -23,6 +23,15 @@ document.addEventListener('DOMContentLoaded', function () {
         // Variables for drag-and-drop logic
         var isDragging, draggingDirection, startY, currentY, previousY, draggedItem, draggedItemIndex, crossedItem, crossedItemIndex;
 
+        var crossedItemArray = []; //del
+        var previousItemsArray = []; //del
+        var previousItemsCrossPointArray = []; //del
+        var nextItemsArray = []; //del
+        var nextItemsCrossPointArray = []; //del
+        var itemsOffsetTopArray = []; //del
+        var draggedItemOffsetTop; //del
+        
+
         // Attach event listeners to each item
         items.forEach(function(item, index) {
 
@@ -44,15 +53,34 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (item !== draggedItem) item.style.transition = 'transform 0.2s ease-in-out 0s';
                 });
 
-                // Get the width and height of the element
-                // var width = item.offsetWidth;
-                // var height = item.offsetHeight;
+                
+                crossedItemArray = []; //del
+                previousItemsArray = []; //del
+                previousItemsCrossPointArray = []; //del
+                nextItemsArray = []; //del
+                nextItemsCrossPointArray = []; //del
+                itemsOffsetTopArray = []; //del
+                draggedItemOffsetTop = draggedItem.offsetHeight + parseFloat( getComputedStyle(draggedItem).marginBottom ); //del
 
-                // Update the element's css property
-                // item.style.position = 'absolute';
-                // item.style.width = width + 'px';
-                // item.style.height = height + 'px';
-                // item.style.zIndex = '1000';
+                // Loop through the previous items in reverse order, starting from the item before the dragged item
+                for (var i = draggedItemIndex - 1; i >= 0; i--) { // previous items in reverse order
+                    var lastItemOffsetHeight = previousItemsCrossPointArray[previousItemsCrossPointArray.length - 1] || 0;
+
+                    var crossPoint = lastItemOffsetHeight - items[i].offsetHeight - parseFloat( getComputedStyle(draggedItem).marginBottom );
+                    previousItemsCrossPointArray.push(crossPoint);
+
+                    if (!previousItemsArray.includes(items[i])) previousItemsArray.push(items[i]);
+                }
+
+                // Loop through the next items starting from the item after the dragged item
+                for (var i = draggedItemIndex + 1; i < items.length; i++) {
+                    var lastItemOffsetHeight = nextItemsCrossPointArray[nextItemsCrossPointArray.length - 1] || 0;
+
+                    var crossPoint = lastItemOffsetHeight + items[i].offsetHeight + parseFloat( getComputedStyle(draggedItem).marginBottom );
+                    nextItemsCrossPointArray.push(crossPoint);
+
+                    if (!nextItemsArray.includes(items[i])) nextItemsArray.push(items[i]);
+                }
 
                 // Uncomment this
                 // item.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.45)';
@@ -218,8 +246,69 @@ document.addEventListener('DOMContentLoaded', function () {
 
             }
 
+            handleItem();
+            
             // Update the previous coordinates for the next iteration
             previousY = currentY;
+        }
+        
+        function handleItem() {
+            console.log("handleItem Run...");
+
+            if(draggingDirection === 'up') {
+                // [-78, -156, -234, -312, -390]
+                var previousItemIndex = previousItemsCrossPointArray.findIndex(value => value <= currentY);
+                previousItemIndex = previousItemIndex == -1 ? previousItemsCrossPointArray.length - 1 : previousItemIndex;
+
+                var result = previousItemsCrossPointArray[previousItemIndex] || previousItemsCrossPointArray[previousItemsCrossPointArray.length - 1];;
+                // console.log(result, previousItemIndex, currentY);
+
+                if( currentY <= result ) {
+                    console.log('currentY, result, previousItemIndex', currentY, result, previousItemIndex);
+                    // console.log(previousItemsArray);
+                    // console.log(previousItemsArray[previousItemIndex]);
+                            
+                    // Get the computed styles
+                    var styles = getComputedStyle(draggedItem);
+
+                    // Extract the height including margin
+                    var overallElementHeight = parseFloat(styles.height) + parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
+
+                    for (let i = 0; i <= previousItemIndex; i++) {
+                        if(!previousItemsArray[i].style.transform) previousItemsArray[i].style.background = "#626e78"; // Del
+                        
+                        // Translate the next item upward by the height of the dragged item
+                        if(!previousItemsArray[i].style.transform) previousItemsArray[i].style.transform = 'translateY(' + (overallElementHeight) + 'px)';
+                    }
+                }
+            }
+            else if (draggingDirection === 'down') {
+                // [78, 156, 234, 312, 390, 468]
+                var nextItemIndex = nextItemsCrossPointArray.findIndex(value => value >= currentY);
+                nextItemIndex = nextItemIndex == -1 ? nextItemsCrossPointArray.length - 1 : nextItemIndex;
+
+                var result = nextItemsCrossPointArray[nextItemIndex] || nextItemsCrossPointArray[nextItemsCrossPointArray.length - 1];;
+                // console.log(result, nextItemIndex, currentY);
+
+                if( currentY >= result ) {
+                    console.log('currentY, result, nextItemIndex', currentY, result, nextItemIndex);
+                    // console.log(nextItemsArray);
+                    // console.log(nextItemsArray[nextItemIndex]);
+                            
+                    // Get the computed styles
+                    var styles = getComputedStyle(draggedItem);
+
+                    // Extract the height including margin
+                    var overallElementHeight = parseFloat(styles.height) + parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
+
+                    for (let i = 0; i <= nextItemIndex; i++) {
+                        if(!nextItemsArray[i].style.transform) nextItemsArray[i].style.background = "#626e78"; // Del
+                        
+                        // Translate the next item upward by the height of the dragged item
+                        if(!nextItemsArray[i].style.transform) nextItemsArray[i].style.transform = 'translateY(' + -(overallElementHeight) + 'px)';
+                    }
+                }
+            }
         }
         
         // logConsole(undefined, "logText")
