@@ -16,9 +16,14 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function initDraggableList(containerSelector, itemSelector) {
 
-        // Select the container and items
+        // Select the container element that holds the sortable list
         var sortableList = document.querySelector(containerSelector);
+
+        // Select all the items within the sortable list using the specified item selector
         var items = sortableList.querySelectorAll(itemSelector);
+
+        // Convert the NodeList of items into a standard array
+        var listItems = Array.from(items);
 
         // Variables for drag-and-drop logic
         var isDragging, draggingDirection, startY, currentY, previousY, draggedItem, draggedItemIndex, crossedItem, crossedItemIndex;
@@ -28,6 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var previousItemsCrossPointArray = []; //del
         var nextItemsArray = []; //del
         var nextItemsCrossPointArray = []; //del
+        var reversItemArray = []; //del
         var itemsOffsetTopArray = []; //del
         var draggedItemOffsetTop; //del
         
@@ -59,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 previousItemsCrossPointArray = []; //del
                 nextItemsArray = []; //del
                 nextItemsCrossPointArray = []; //del
+                reversItemArray = []; //del
                 itemsOffsetTopArray = []; //del
                 draggedItemOffsetTop = draggedItem.offsetHeight + parseFloat( getComputedStyle(draggedItem).marginBottom ); //del
 
@@ -117,9 +124,10 @@ document.addEventListener('DOMContentLoaded', function () {
             if ( currentY < previousY && draggingDirection === 'down' ) {
                 logConsole("reversing-top")
                 console.log('I am Reversing Top');
-                
+
                 // Check if the mouse is moving upward from its starting position
                 if (startY >= event.clientY) {
+                    reversHandleItem();
                     draggingDirection = 'up';
                     crossedItem = null;
                 }
@@ -142,15 +150,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 }
-
             }
             // Check if the mouse is moving downward and the dragging direction is 'up'
             else if ( currentY > previousY && draggingDirection === 'up' ) {
                 logConsole("reversing-bottom")
                 console.log('I am Reversing Bottom');
-                
+
                 // Check if the mouse is moving downward from its starting position
                 if (startY <= event.clientY) {
+                    reversHandleItem();
                     draggingDirection = 'down';
                     crossedItem = null;
                 }
@@ -173,9 +181,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 }
-
             }
-            // Handle dragging downward 
+            // Handle dragging downward
             else if ( currentY > previousY ) {
                 logConsole("moving-bottom")
                 console.log('Mouse moving towards the bottom');
@@ -208,9 +215,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 }
-
+                handleItem();
             }
-            // Handle dragging upward 
+            // Handle dragging upward
             else if ( currentY < previousY ) {
                 logConsole("moving-top")
                 console.log('Mouse moving towards the top');
@@ -243,31 +250,46 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 }
-
+                handleItem();
             }
-
-            handleItem();
             
             // Update the previous coordinates for the next iteration
             previousY = currentY;
         }
-        
-        function handleItem() {
-            console.log("handleItem Run...");
 
+        function reversHandleItem() {
+            // Check if the mouse is moving upward and the dragging direction is 'down'
+            if (draggingDirection === 'down') {
+                for (var i = listItems.length - 1; i >= 0; i--) {
+                    if ( draggedItem !== listItems[i] && listItems[i].style.transform ) {
+                        listItems[i].style.transform = '';
+                    }
+                }
+            }
+            // Check if the mouse is moving downward and the dragging direction is 'up'
+            else if (draggingDirection === 'up') {
+                for (var i = 0; i < listItems.length; i++) {
+                    if ( draggedItem !== listItems[i] && listItems[i].style.transform ) {
+                        listItems[i].style.transform = '';
+                    }
+                }
+            }
+        }
+
+        function handleItem() {
+            // console.log("handleItem Run...");
+            // logConsole(undefined, "handleItem Run...", draggingDirection);
             if(draggingDirection === 'up') {
-                // [-78, -156, -234, -312, -390]
+                // previousItemsCrossPointArray = [-78, -156, -234, -312, -390]
                 var previousItemIndex = previousItemsCrossPointArray.findIndex(value => value <= currentY);
                 previousItemIndex = previousItemIndex == -1 ? previousItemsCrossPointArray.length - 1 : previousItemIndex;
-
+                // console.log(previousItemsCrossPointArray);
                 var result = previousItemsCrossPointArray[previousItemIndex] || previousItemsCrossPointArray[previousItemsCrossPointArray.length - 1];;
                 // console.log(result, previousItemIndex, currentY);
 
                 if( currentY <= result ) {
-                    console.log('currentY, result, previousItemIndex', currentY, result, previousItemIndex);
-                    // console.log(previousItemsArray);
-                    // console.log(previousItemsArray[previousItemIndex]);
-                            
+                    crossedItem = previousItemsArray[previousItemIndex];
+                    
                     // Get the computed styles
                     var styles = getComputedStyle(draggedItem);
 
@@ -275,6 +297,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     var overallElementHeight = parseFloat(styles.height) + parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
 
                     for (let i = 0; i <= previousItemIndex; i++) {
+                        // console.log(previousItemsArray[i], i);
                         if(!previousItemsArray[i].style.transform) previousItemsArray[i].style.background = "#626e78"; // Del
                         
                         // Translate the next item upward by the height of the dragged item
@@ -283,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
             else if (draggingDirection === 'down') {
-                // [78, 156, 234, 312, 390, 468]
+                // nextItemsCrossPointArray = [78, 156, 234, 312, 390, 468]
                 var nextItemIndex = nextItemsCrossPointArray.findIndex(value => value >= currentY);
                 nextItemIndex = nextItemIndex == -1 ? nextItemsCrossPointArray.length - 1 : nextItemIndex;
 
@@ -291,10 +314,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 // console.log(result, nextItemIndex, currentY);
 
                 if( currentY >= result ) {
-                    console.log('currentY, result, nextItemIndex', currentY, result, nextItemIndex);
-                    // console.log(nextItemsArray);
-                    // console.log(nextItemsArray[nextItemIndex]);
-                            
+                    crossedItem = nextItemsArray[nextItemIndex];
+                    
                     // Get the computed styles
                     var styles = getComputedStyle(draggedItem);
 
@@ -302,6 +323,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     var overallElementHeight = parseFloat(styles.height) + parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
 
                     for (let i = 0; i <= nextItemIndex; i++) {
+                        // console.log(nextItemsArray[i], i);
+                        if (!reversItemArray.includes(nextItemsArray[i])) reversItemArray.unshift(nextItemsArray[i]);
+                        
                         if(!nextItemsArray[i].style.transform) nextItemsArray[i].style.background = "#626e78"; // Del
                         
                         // Translate the next item upward by the height of the dragged item
@@ -311,8 +335,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         
-        // logConsole(undefined, "logText")
-        function logConsole(direction, logText) {
+        // logConsole(undefined, "logText", "value");
+        function logConsole(direction, logText, value) {
             // console.clear();
             var logElement = document.querySelector(".log");
             var lastElement = logElement.lastElementChild;
@@ -321,26 +345,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 var lastElementCount = lastElement.querySelector(".count");
                 lastElementCount.innerHTML = parseInt(lastElementCount.innerHTML) + 1;
             } else {
-                if(logText) logElement.innerHTML += '<div class="log-text"><span class="count">0</span><span class="text">' + logText + '</div>';
-                    
+                if(logText) logElement.innerHTML += '<div class="log-text"><span class="count">1</span><span class="text">' + logText + value + '</div>';
+                // return;
                 switch (direction) {
                     case 'reversing-top':
-                        logElement.innerHTML += '<div class="reversing-top"><span class="count">1</span><span class="text">I am Reversing Top</span></div>';
+                        logElement.innerHTML += '<div class="reversing-top"><span class="count">1</span><span class="text">I am Reversing Top ↑</span></div>';
                         break;
                     case 'reversing-bottom':
-                        logElement.innerHTML += '<div class="reversing-bottom"><span class="count">1</span><span class="text">I am Reversing Bottom</span></div>';
+                        logElement.innerHTML += '<div class="reversing-bottom"><span class="count">1</span><span class="text">I am Reversing Bottom ↓</span></div>';
                         break;
                     case 'moving-bottom':
-                        logElement.innerHTML += '<div class="moving-bottom"><span class="count">1</span><span class="text">Mouse moving towards the Bottom</span></div>';
+                        logElement.innerHTML += '<div class="moving-bottom"><span class="count">1</span><span class="text">Mouse moving towards the Bottom ↓</span></div>';
                         break;
                     case 'moving-top':
-                        logElement.innerHTML += '<div class="moving-top"><span class="count">1</span><span class="text">Mouse moving towards the top</span></div>';
+                        logElement.innerHTML += '<div class="moving-top"><span class="count">1</span><span class="text">Mouse moving towards the top ↑</span></div>';
                         break;
                     default:
                         logElement.innerHTML += '<div class="unknown-direction"><span class="count">1</span><span class="text">Handle any other cases or errors</span></div>';
                 }
             }
-            // console.log(lastElement);
         }
 
         /**
